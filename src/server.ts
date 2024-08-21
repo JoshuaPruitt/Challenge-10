@@ -1,9 +1,5 @@
 import express from 'express';
-import { QueryResult } from 'pg';
-import {pool, connectToDb} from './connection.js';
-
-//connect to the database
-await connectToDb();
+import Main from './main.js';
 
 const PORT = process.env.port || 3001;
 const app = express();
@@ -12,13 +8,11 @@ const app = express();
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 
-pool.query('SELECT * FROM employee', (err: Error, result: QueryResult) => {
-    if(err){
-        console.log(err);
-    } else if (result){
-        console.log(result.rows);
-    }
-})
+//start the server
+
+
+const main = new Main
+main.startInit();
 
 app.use((_req, res) => {
     res.status(404).end();

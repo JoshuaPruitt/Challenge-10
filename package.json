@@ -5,9 +5,9 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "build": "tsc",
-    "test": "npx tsc && echo \"Error: no test specified\" && exit 1",
-    "start": "node dist/server.js"
+    "build": "npx tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm run build && node dist/server.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
