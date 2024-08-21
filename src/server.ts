@@ -1,9 +1,9 @@
 import express from 'express';
 import { QueryResult } from 'pg';
-import {pool, connectToDatabase} from './connection.js';
+import {pool, connectToDb} from './connection.js';
 
 //connect to the database
-await connectToDatabase();
+await connectToDb();
 
 const PORT = process.env.port || 3001;
 const app = express();
