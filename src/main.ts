@@ -20,13 +20,17 @@ class Main {
                     name: 'ReadOrWrite',
                     message: 
                         'Would you like to Create a new employee or view existing ones?',
-                    choices: ['Create new employee', 'View existing employees'],
+                    choices: ['Create new employee', 'View existing employees', "Add department", "Add role"],
                 },
             ])
             .then((answers: {ReadOrWrite: string}) => {
                 //check what the user selected
                 if(answers.ReadOrWrite === "Create new employee"){
+                    this.createEmployee();
 
+                } else if(answers.ReadOrWrite === "Add department"){
+
+                } else if(answers.ReadOrWrite === 'Add role'){
 
                 } else {
                     this.insert(`SELECT e.id AS ID, e.first_name AS First_Name, e.last_name AS Last_Name, role.title AS Title, 
@@ -41,16 +45,72 @@ class Main {
     }
 
     createEmployee(): void{
+        //grab the role data to be inserted into the list
+        const roleData: any = this.insert(
+            `SELECT *
+             FROM role`);
 
+        console.log(roleData)
+        
+        //grab the employee data to select a manager
+        const managerData: any = this.insert(
+            `SELECT employee.id as ID, employee.first_name AS first_name, employee.last_name AS last_name,
+             FROM employee`);
+
+        console.log(roleData)
+        
+        inquirer
+            .prompt([
+                {
+                    type: 'input',
+                    name: 'employeefName',
+                    message: 
+                        "What is the first name of your New Employee"
+
+                },
+                
+                {
+                    type: 'input',
+                    name: 'employeelName',
+                    message: 
+                        "What is the last name of your New Employee"
+                },
+                
+                {
+                    type: 'list',
+                    name: 'employeeRole',
+                    message: 
+                        'What is the employees roll',
+                    choices: [roleData]
+                },
+
+                {
+                    type: 'list',
+                    name: 'employeeManager',
+                    message: 
+                        "Does your employee have a manager?",
+                    choices: [managerData, 'no']
+
+                }
+            ])
+            .then((roleData: {employeefName: any, employeelName: any, employeeRole: any, employeeManager: any}) => {
+                
+
+                this.insert(`
+                    INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                    VALUES
+                        (${roleData.employeefName}, ${roleData.employeelName},)`)
+            })
     }
 
     //used to send commands to the database
-    insert(query: string): void {
+    insert(query: string) {
         pool.query(query, (err: Error, result: QueryResult) => {
             if(err){
                 console.log(err);
             } else if (result){
                 console.log(result.rows);
+                return result.json()
             }
         })
     };
