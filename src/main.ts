@@ -10,7 +10,7 @@ class Main {
         await connectToDb();
 
         this.mainChoices()
-    }
+    };
 
     //user grab function is not ready....
     //used to fetch the user data
@@ -36,7 +36,7 @@ class Main {
                     name: 'ReadOrWrite',
                     message: 
                         'Would you like to Create a new employee or view existing ones?',
-                    choices: ['Create new employee', 'View existing employees', "Add department", "Add role"],
+                    choices: ['Create new employee', 'View existing employees', "Add role", "Add department"],
                 },
             ])
             .then((answers: {ReadOrWrite: string}) => {
@@ -44,9 +44,11 @@ class Main {
                 if(answers.ReadOrWrite === "Create new employee"){
                     this.createEmployee();
 
-                } else if(answers.ReadOrWrite === "Add department"){
+                } else if(answers.ReadOrWrite === "Add role"){
+                    this.createRole();
 
-                } else if(answers.ReadOrWrite === 'Add role'){
+                } else if(answers.ReadOrWrite === 'Add department'){
+                    this.createDepartment();
 
                 } else {
                     this.insert(`SELECT e.id AS ID, e.first_name AS First_Name, e.last_name AS Last_Name, role.title AS Title, 
@@ -56,9 +58,12 @@ class Main {
                                 INNER JOIN role ON e.role_id = role.id
                                 LEFT JOIN department ON role.departments = department.id;`
                             )
+                        
+                    //send user back to main menu
+                    this.mainChoices();
                 }
             })
-    }
+    };
 
     //creates and adds the employee to the database using inquirer
     createEmployee(): void{
@@ -85,24 +90,92 @@ class Main {
                     type: 'input',
                     name: 'employeeRole',
                     message: 
-                        'What is the employees roll',
+                        'What is the employees roll id?',
                 },
 
                 {
                     type: 'input',
                     name: 'employeeManager',
                     message: 
-                        "Does your employee have a manager?",
+                        "Does your employee have a manager (please provide manager id)?",
                 }
             ])
-            .then((roleData: {employeefName: any, employeelName: any, employeeRole: any, employeeManager: any}) => {
+            .then((employeeData: {employeefName: string, employeelName: string, employeeRole: any, employeeManager: any}) => {
                 
 
                 this.insert(`
                     INSERT INTO employee (first_name, last_name, role_id, manager_id)
                     VALUES
-                        (${roleData.employeefName}, ${roleData.employeelName},)`)
-            })
+                        ('${employeeData.employeefName}', '${employeeData.employeelName}', ${parseInt(employeeData.employeeRole)}, ${parseInt(employeeData.employeeManager)});`)
+
+                console.log(`Employee ${employeeData.employeefName + " " + employeeData.employeelName} added!`)
+
+                // send user back to main menu
+                this.mainChoices();
+            });
+    };
+
+
+    //used to create and add new roles to the database
+    createRole(): void{
+        inquirer
+            .prompt([
+                {
+                    type: 'input',
+                    name: 'newRoll',
+                    message: 
+                        "What is the name of your New roll?"
+
+                },
+
+                {
+                    type: 'input',
+                    name: 'rollSalary',
+                    message: 
+                        "what is the salary of this new roll?"
+
+                },
+
+                {
+                    type: 'input',
+                    name: 'departmentId',
+                    message: 
+                        'what is the id of the deparment'
+                }
+            ])
+            .then((rollData: {newRoll: string, rollSalary: any, departmentId: any}) => {
+
+                this.insert(`
+                    INSERT INTO role (title, salary, departments)
+                    VALUES
+                        ('${rollData.newRoll}', ${parseInt(rollData.rollSalary)}, ${parseInt(rollData.departmentId)});`)
+
+                console.log(`Roll ${rollData.newRoll} added!`)
+
+                this.mainChoices();
+            });
+    };
+
+    //used to create and add departments to the database
+    createDepartment(): void {
+        inquirer
+            .prompt([
+                {
+                    type: 'input',
+                    name: 'departmentName',
+                    message: 
+                        "What is the name of your new department?"
+                }
+            ])
+            .then((deparmentName: {departmentName: string}) => {
+                this.insert(`
+                    INSERT INTO department (name)
+                    VALUES ('${deparmentName.departmentName}');`)
+
+                console.log(`Department ${deparmentName.departmentName} Added!`)
+
+                this.mainChoices();
+            });
     }
 
     //used to send commands to the database
@@ -111,6 +184,10 @@ class Main {
         pool.query(query, (err: Error, result: pg.QueryResult) => {
             if(err){
                 console.log(err);
+            //edit this to insert parameters as well
+            } else if (result && params){
+                console.log(result.rows);
+                return result.rows[0]
             } else if (result){
                 console.log(result.rows);
                 return result.rows[0]
