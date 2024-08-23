@@ -1,15 +1,31 @@
-import { QueryResult } from 'pg';
+import pg from 'pg';
 import {pool, connectToDb} from './connection.js';
 import inquirer from 'inquirer';
 
 class Main {
-    
+
+    //function runs on start up
     async startInit() {
         //connect to the database
         await connectToDb();
 
         this.mainChoices()
     }
+
+    //user grab function is not ready....
+    //used to fetch the user data
+    // async fetchChoices(){
+    //     //fetch data from the database
+    //     const query: string = "SELECT id FROM employee";
+    //     const users: any = this.insert(query);
+
+    //     const userChoices = users.map(user => ({
+    //         name: `${user.first_name, user.last_name}`,
+    //         value: user.id,
+    //     }));
+
+    //     return userChoices
+    // }
 
     //gives the menu choices
     mainChoices(): void{
@@ -44,20 +60,8 @@ class Main {
             })
     }
 
+    //creates and adds the employee to the database using inquirer
     createEmployee(): void{
-        //grab the role data to be inserted into the list
-        const roleData: any = this.insert(
-            `SELECT *
-             FROM role`);
-
-        console.log(roleData)
-        
-        //grab the employee data to select a manager
-        const managerData: any = this.insert(
-            `SELECT employee.id as ID, employee.first_name AS first_name, employee.last_name AS last_name,
-             FROM employee`);
-
-        console.log(roleData)
         
         inquirer
             .prompt([
@@ -77,20 +81,18 @@ class Main {
                 },
                 
                 {
-                    type: 'list',
+                    //want to change the next two inputs to a list so that all the inputted roles and managers are displayed as choices
+                    type: 'input',
                     name: 'employeeRole',
                     message: 
                         'What is the employees roll',
-                    choices: [roleData]
                 },
 
                 {
-                    type: 'list',
+                    type: 'input',
                     name: 'employeeManager',
                     message: 
                         "Does your employee have a manager?",
-                    choices: [managerData, 'no']
-
                 }
             ])
             .then((roleData: {employeefName: any, employeelName: any, employeeRole: any, employeeManager: any}) => {
@@ -104,13 +106,14 @@ class Main {
     }
 
     //used to send commands to the database
-    insert(query: string) {
-        pool.query(query, (err: Error, result: QueryResult) => {
+    insert(query: string, params?: any[]) {
+        
+        pool.query(query, (err: Error, result: pg.QueryResult) => {
             if(err){
                 console.log(err);
             } else if (result){
                 console.log(result.rows);
-                return result.json()
+                return result.rows[0]
             }
         })
     };
