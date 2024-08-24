@@ -36,7 +36,7 @@ class Main {
                     name: 'ReadOrWrite',
                     message: 
                         'Would you like to Create a new employee or view existing ones?',
-                    choices: ['Create new employee', 'View existing employees', "Add role", "Add department"],
+                    choices: ['View all employees', 'View all departments', 'View all roles', "Add role", "Add department", 'Create new employee', 'Update employee role'],
                 },
             ])
             .then((answers: {ReadOrWrite: string}) => {
@@ -50,20 +50,51 @@ class Main {
                 } else if(answers.ReadOrWrite === 'Add department'){
                     this.createDepartment();
 
+                } else if(answers.ReadOrWrite === "View all departments"){
+                    this.viewDepartments();
+
+                } else if(answers.ReadOrWrite === "View all roles"){
+                    this.viewRoles();
+
+                } else if(answers.ReadOrWrite === "Update employee role"){
+                    this.updateEmployeeRole();
+
                 } else {
-                    this.insert(`SELECT e.id AS ID, e.first_name AS First_Name, e.last_name AS Last_Name, role.title AS Title, 
-                                department.name AS Department, role.salary as Salary, concat(m.first_name, ' ', m.Last_Name) AS manager
-                                from employee e 
-                                LEFT JOIN employee m on e.manager_id = m.id
-                                INNER JOIN role ON e.role_id = role.id
-                                LEFT JOIN department ON role.departments = department.id;`
-                            )
-                        
-                    //send user back to main menu
-                    this.mainChoices();
+                    //if none of the following were selected then view the employee
+                    this.viewEmployees();
+                    
                 }
             })
     };
+
+    viewEmployees(): void{
+        this.insert(`SELECT e.id AS ID, e.first_name AS First_Name, e.last_name AS Last_Name, role.title AS Title, 
+            department.name AS Department, role.salary as Salary, concat(m.first_name, ' ', m.Last_Name) AS manager
+            from employee e 
+            LEFT JOIN employee m on e.manager_id = m.id
+            INNER JOIN role ON e.role_id = role.id
+            LEFT JOIN department ON role.departments = department.id;`
+        )
+
+        //send user back to main menu
+        this.mainChoices();
+    }
+
+    viewRoles(): void{
+        this.insert(`SELECT *
+            FROM role;`
+        )
+
+        this.mainChoices();
+    }
+
+    viewDepartments(): void{
+        this.insert(`SELECT *
+            FROM department;`
+        )
+
+        this.mainChoices();
+    }
 
     //creates and adds the employee to the database using inquirer
     createEmployee(): void{
@@ -114,6 +145,31 @@ class Main {
                 this.mainChoices();
             });
     };
+
+    updateEmployeeRole(){
+        inquirer
+            .prompt([
+                {
+                    type: 'input',
+                    name: 'employeeId',
+                    message:
+                        "what is the id of the employee your trying to edit?",
+                },
+
+                {
+                    type: 'input',
+                    name: 'roleId',
+                    message: 
+                        "What is the id of the new role?",
+                }
+            ])
+            .then((updatedRole: {employeeId: string, roleId: any}) => {
+                this.insert(`
+                    UPDATE employee 
+                    SET role_id = '${updatedRole.roleId}'
+                    WHERE id = '${updatedRole.employeeId}';`)
+            })
+    }
 
 
     //used to create and add new roles to the database
@@ -179,15 +235,12 @@ class Main {
     }
 
     //used to send commands to the database
-    insert(query: string, params?: any[]) {
+    insert(query: string) {
         
         pool.query(query, (err: Error, result: pg.QueryResult) => {
             if(err){
                 console.log(err);
             //edit this to insert parameters as well
-            } else if (result && params){
-                console.log(result.rows);
-                return result.rows[0]
             } else if (result){
                 console.log(result.rows);
                 return result.rows[0]
