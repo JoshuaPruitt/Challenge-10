@@ -161,14 +161,16 @@ class Main {
                     name: 'roleId',
                     message: 
                         "What is the id of the new role?",
-                }
+                },
             ])
-            .then((updatedRole: {employeeId: string, roleId: any}) => {
+            .then((updatedRole: {employeeId: any, roleId: any}) => {
                 this.insert(`
                     UPDATE employee 
-                    SET role_id = '${updatedRole.roleId}'
-                    WHERE id = '${updatedRole.employeeId}';`)
-            })
+                    SET role_id = ${parseInt(updatedRole.roleId)}
+                    WHERE id = ${parseInt(updatedRole.employeeId)};`)
+
+                this.mainChoices();
+            });
     }
 
 
