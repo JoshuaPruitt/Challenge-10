@@ -23,35 +23,55 @@ This app lets you create cars!
 This project requires node.js and its included npm package manager.\
 You can go to <a href="https://nodejs.org/en/download/package-manager">this</a> website to download node.js and npm. Just follow node's included download instructions!
 
+Postgres SQL is also required to run the project and interface with databases. <a href="https://www.postgresql.org/download/">Postgres Download</a> this link can be used to download the postgres software. Follow the provided guide to install correctly. 
+
 ## Installation
 Once the files are downloaded onto your machine open the project folder in your preferred terminal.\
-To install the necessary dependencies run the "npm i" command to install the required files. Finally, run "npm run start" to run the employee creator!
+To install the necessary dependencies run the "npm i" command to install the required files. 
+
+Next go to the .env.EXAMPLE file and add your postgres username and password, then rename the file to just .env. Finally, run "npm run start" to run the employee creator!
 
 ## Usage
+Once you run "npm run start" and have installed all dependancies you will be prompted with a main menu in your terminal. The options include "View all employees", "View all departments", "View all roles", "Add role", "Add department, and "create new employee". 
+
+You can use the arrow keys to scroll through the menu and the enter key to select and option. You will be prompted with questions with any of the create or update options. View options only need to be selected to be used, once their information is displayed you can press the arrow keys to once again use the main menu.
 
 
 ## Code Snippet
-
+This code inables the database to be interfaced with. 
 
 ````
+const pool = new Pool({
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    host: 'localhost',
+    database: process.env.DB_NAME,
+    port: 5432,
+});
 
+const connectToDb = async () => {
+    try {
+        await pool.connect();
+        console.log("Connected to the Database");
+    } catch (err) {
+        console.log('ERROR Connecting to database:', err);
+        process.exit(1);
+    }
+};
 ````
 
 ## Features
 Features include: 
-* Being able to create Cars, Trucks, and Motorbikes
-* A menu for selecting existing vehicles
-* Vehicle specific actions. Like towing for trucks and Wheelies for motorcycles
-* Being able to change the speed of vehicles in the actions menu
-* Being able to turn vehicles in the actions menu
+* View databases like, viewing employees, roles, and departments
+* A menu for selecting functions
+* Options to create new employees, roles, and departments
+* Options to update employee roles
 
 ## Future Features
 Features that may be implemented in the future include: 
-* 
-* 
-* 
-* 
-
+* giving a choice of options instead of chaning a value.
+* Delete option.
+* Cancel option.
 
 ## License
 Licensed under the MIT license.
